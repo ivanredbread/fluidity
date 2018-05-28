@@ -1256,7 +1256,7 @@
       ! Pointer to the nvfrac field's shape function
       type(element_type), pointer :: nvfrac_shape
       ! Derivative of shape function for nvfrac field
-      real, dimension(:, :, :), allocatable :: dnvfrac_t
+      real, dimension(:, :, :), pointer :: dnvfrac_t
 
       type(element_type), intent(inout) :: supg_shape
 
@@ -1341,6 +1341,8 @@
          ! If the PhaseVolumeFraction is on a different mesh to the Velocity,
          ! then allocate memory to hold the derivative of the nvfrac shape function
          allocate(dnvfrac_t(ele_loc(nvfrac, ele), ele_ngi(nvfrac, ele), u%dim))
+       else
+         nullify(dnvfrac_t)
       end if
       
       ! Step 2: Set up test function
@@ -1614,7 +1616,7 @@
       type(scalar_field), intent(in) :: nvfrac
       real, dimension(ele_loc(u, ele), ele_ngi(u, ele), u%dim), intent(in) :: du_t
       real, dimension(ele_loc(u, ele), ele_ngi(u, ele), u%dim), intent(in) :: dug_t
-      real, dimension(:, :, :), intent(in) :: dnvfrac_t
+      real, dimension(:, :, :), pointer :: dnvfrac_t
       real, dimension(ele_ngi(u, ele)), intent(in) :: detwei
       real, dimension(u%dim, u%dim, ele_ngi(u,ele)) :: J_mat, diff_q
       real, dimension(u%dim, u%dim, ele_loc(u, ele), ele_loc(u, ele)), intent(inout) :: big_m_tensor_addto
