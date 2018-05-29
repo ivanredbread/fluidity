@@ -1270,7 +1270,7 @@
       real, dimension(ele_loc(ct_rhs, ele), ele_ngi(ct_rhs, ele), u%dim) :: dp_t
 
       real, dimension(u%dim, ele_ngi(u, ele)) :: relu_gi
-      real, dimension(u%dim, ele_loc(ct_rhs, ele), ele_loc(u, ele)) :: grad_p_u_mat
+      real, dimension(1, u%dim, ele_loc(ct_rhs, ele), ele_loc(u, ele)) :: grad_p_u_mat
       
       ! What we will be adding to the matrix and RHS - assemble these as we
       ! go, so that we only do the calculations we really need
@@ -1383,9 +1383,9 @@
 
          if(integrate_continuity_by_parts) then
             if(multiphase) then
-               grad_p_u_mat = -dshape_shape(dp_t, u_shape, detwei*ele_val_at_quad(nvfrac, ele))
+               grad_p_u_mat(1,:,:,:) = -dshape_shape(dp_t, u_shape, detwei*ele_val_at_quad(nvfrac, ele))
             else
-               grad_p_u_mat = -dshape_shape(dp_t, u_shape, detwei)
+               grad_p_u_mat(1,:,:,:) = -dshape_shape(dp_t, u_shape, detwei)
             end if
          else
             if(multiphase) then
@@ -1400,10 +1400,10 @@
                   dnvfrac_t = du_t
                end if
 
-               grad_p_u_mat =  shape_dshape(p_shape, du_t, detwei*ele_val_at_quad(nvfrac, ele)) + &
+               grad_p_u_mat(1,:,:,:) =  shape_dshape(p_shape, du_t, detwei*ele_val_at_quad(nvfrac, ele)) + &
                               shape_shape_vector(p_shape, u_shape, detwei, ele_grad_at_quad(nvfrac, ele, dnvfrac_t))
             else
-               grad_p_u_mat = shape_dshape(p_shape, du_t, detwei)
+               grad_p_u_mat(1,:,:,:) = shape_dshape(p_shape, du_t, detwei)
             end if
          end if
       end if
@@ -1471,7 +1471,7 @@
       call addto(rhs, u_ele, rhs_addto)
       
       if(assemble_ct_matrix_here) then
-        call addto(ct_m, p_ele, u_ele, spread(grad_p_u_mat, 1, 1))
+        call addto(ct_m, p_ele, u_ele, grad_p_u_mat)
       end if
       
       if(multiphase) then
