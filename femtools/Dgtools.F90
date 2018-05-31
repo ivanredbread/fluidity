@@ -484,27 +484,23 @@ contains
     type(csr_matrix), intent(in) :: mass
     type(scalar_field), intent(inout) :: field
 
-    integer :: row, col, j, k, nloc
+    integer, dimension(row_length(mass,1)) :: lvec
+    integer :: row, i, j, k, nloc
 
     assert(size(mass,2)==node_count(field))
 
     ! we assume all rows have the same length:
     nloc = row_length(mass, 1)
-    ! determines starting position in field
-    col = 0
-    ! local column within each element
-    j = 0
-    do row=1, size(mass, 1)
-      assert(nloc==row_length(mass, row))
-      assert(all(row_m_ptr(mass, row)==(/ (col+k, k=1, nloc) /)))
-      field%val(row) = dot_product(mass%val((row-1)*nloc+1:row*nloc), field%val(col+1:col+nloc))
-      j = j + 1
-      if (j==nloc) then
-        j=0; col=col+nloc
-      end if
-    end do
 
-    assert(col==size(mass,2))
+    do i = 0, size(mass, 1)-1, nloc
+      lvec = field%val(i+1:i+nloc)
+      do j = 1, nloc
+        row = i + j
+        assert(nloc==row_length(mass, row))
+        assert(all(row_m_ptr(mass, row)==(/ (i+k, k=1, nloc) /)))
+        field%val(row) = dot_product(mass%val((row-1)*nloc+1:row*nloc), lvec)
+      end do
+    end do
     
   end subroutine csr_dg_apply_mass_scalar
 
