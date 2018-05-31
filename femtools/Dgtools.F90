@@ -484,7 +484,7 @@ contains
     type(csr_matrix), intent(in) :: mass
     type(scalar_field), intent(inout) :: field
 
-    integer, dimension(row_length(mass,1)) :: lvec
+    real, dimension(row_length(mass,1)) :: lvec
     integer :: row, i, j, k, nloc
 
     assert(size(mass,2)==node_count(field))
